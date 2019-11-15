@@ -2,8 +2,6 @@ package edu.neu.coe.info6205.life.base;
 
 import edu.neu.coe.info6205.life.library.Library;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -65,9 +63,6 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 
 		public static final int MaxGenerations = 1000;
 
-		// CONSIDER making this a priority queue so that the older generations can be discarded.
-		public static final Map<Game, Long> generations = new HashMap<>();
-
 		public static void main(String[] args) {
 				String patternName = args.length > 0 ? args[0] : "Blip";
 				System.out.println("Game of Life with starting pattern: " + patternName);
@@ -84,7 +79,6 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ngroup=\n" + g.render());
 				Game game = new Game(generation, grid, null, groupMonitor);
 				while (!game.terminated()) {
-						generations.put(game, game.generation);
 						System.out.println(game.render());
 						game = game.generation(gridMonitor);
 				}
