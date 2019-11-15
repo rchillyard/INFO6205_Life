@@ -72,10 +72,11 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				String patternName = args.length > 0 ? args[0] : "Blip";
 				System.out.println("Game of Life with starting pattern: " + patternName);
 				final String pattern = Library.get(patternName);
-				run(pattern);
+				final long generations = run(pattern);
+				System.out.println("Ending Game of Life after " + generations + " generations");
 		}
 
-		public static void run(String pattern) {
+		public static long run(String pattern) {
 				final long generation = 0L;
 				final Grid grid = new Grid(generation);
 				grid.add(Group.create(generation, pattern));
@@ -87,7 +88,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 						System.out.println(game.render());
 						game = game.generation(gridMonitor);
 				}
-				System.out.println("Ending Game of Life after " + game.generation + " generations and with " + game.getCount() + " cells");
+				return game.generation;
 		}
 
 		private Game(long generation, BiConsumer<Long, Group> monitor) {
@@ -110,10 +111,10 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 
 		/**
 		 * Check to see if there is a previous pair of matching games.
-		 *
+		 * <p>
 		 * NOTE this method of checking for cycles is not guaranteed to work!
 		 * NOTE this method may be very inefficient.
-		 *
+		 * <p>
 		 * TODO project teams may need to fix this method.
 		 *
 		 * @param game the game to check.
@@ -123,15 +124,14 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				MatchingGame matchingGame = findCycle(game);
 				int cycles = matchingGame.k;
 				Game history = matchingGame.match;
-				if (history==null) return false;
+				if (history == null) return false;
 				Game current = game;
-				while (current !=null && history !=null && cycles > 0) {
+				while (current != null && history != null && cycles > 0) {
 						if (current.equals(history)) {
 								current = current.previous;
 								history = history.previous;
 								cycles--;
-						}
-						else
+						} else
 								return false;
 				}
 				return true;
@@ -139,6 +139,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 
 		/**
 		 * Find a game which matches the given game.
+		 *
 		 * @param game the game to match.
 		 * @return a MatchingGame object: if the match field is null it means that we did not find a match;
 		 * the k field is the number of generations between game and the matching game.
@@ -146,7 +147,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		private static MatchingGame findCycle(Game game) {
 				int k = 1;
 				Game candidate = game.previous;
-				while (candidate!=null && !game.equals(candidate)) {
+				while (candidate != null && !game.equals(candidate)) {
 						candidate = candidate.previous;
 						k++;
 				}

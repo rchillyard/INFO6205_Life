@@ -3,7 +3,6 @@ package edu.neu.coe.info6205.life.base;
 import com.google.common.collect.HashMultiset;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -81,8 +80,8 @@ public class Grid implements Generational<Grid, Group>, Countable, Renderable {
 				if (this == o) return true;
 				if (!(o instanceof Grid)) return false;
 				Grid grid = (Grid) o;
-				if (groups.size()!=grid.groups.size()) return false;
-				if (grid.getCount()!=getCount()) return false;
+				if (groups.size() != grid.groups.size()) return false;
+				if (grid.getCount() != getCount()) return false;
 				return HashMultiset.create(groups).equals(HashMultiset.create(grid.groups));
 		}
 

@@ -269,7 +269,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 				if (this == o) return true;
 				if (o == null || getClass() != o.getClass()) return false;
 				Group group = (Group) o;
-				if (points.size()!=group.points.size()) return false;
+				if (points.size() != group.points.size()) return false;
 				final List<Point> elements1 = pointsAbsolute();
 				final List<Point> elements2 = group.pointsAbsolute();
 				final boolean same = HashMultiset.create(elements1).equals(HashMultiset.create(elements2));
