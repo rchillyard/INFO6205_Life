@@ -26,5 +26,11 @@
             <artifactId>guava</artifactId>
             <version>19.0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.jenetics/jenetics -->
+        <dependency>
+            <groupId>io.jenetics</groupId>
+            <artifactId>jenetics</artifactId>
+            <version>5.0.1</version>
+        </dependency>
     </dependencies>
 </project>

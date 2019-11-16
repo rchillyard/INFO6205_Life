@@ -105,4 +105,17 @@ public class PointTest {
 				assertEquals(1.0, new PrivateMethodTester(new Point(0, 1)).invokePrivate("distance"));
 				assertEquals(Math.sqrt(2), (Double) new PrivateMethodTester(new Point(1, 1)).invokePrivate("distance"), 0.00001);
 		}
+
+		@Test
+		public void testCreateVector() {
+				assertEquals(new Point(-10, -10), Point.createVector(0, 10));
+				assertEquals(new Point(0, -10), Point.createVector(1, 10));
+				assertEquals(new Point(10, -10), Point.createVector(2, 10));
+				assertEquals(new Point(-10, 0), Point.createVector(3, 10));
+				assertEquals(new Point(10, 0), Point.createVector(4, 10));
+				assertEquals(new Point(-10, 10), Point.createVector(5, 10));
+				assertEquals(new Point(0, 10), Point.createVector(6, 10));
+				assertEquals(new Point(10, 10), Point.createVector(7, 10));
+		}
+
 }

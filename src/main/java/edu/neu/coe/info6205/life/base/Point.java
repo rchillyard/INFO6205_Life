@@ -127,6 +127,22 @@ public class Point implements Comparable<Point> {
 		}
 
 		/**
+		 * Method to generate a point vector based on direction and length.
+		 *
+		 * @param direction 0: SW, 1: S, 2: SE, 3: W, 4: E, 5: NW, 6: N, 7: NE.
+		 * @param length the length of the vector.
+		 * @return a point vector in the given direction with the given length.
+		 */
+		public static Point createVector(int direction, int length) {
+				final int n = direction - 3;
+				if (n > 0) {
+						int y = n > 1 ? 1 : 0;
+						int x = n == 2 ? -1 : n == 3 ? 0 : 1;
+						return new Point(x * length, y * length);
+				} else return createVector(7 - direction, -length);
+		}
+
+		/**
 		 * Calculate the distance this point is from the origin.
 		 *
 		 * @return the square root of x^2 + y^2.

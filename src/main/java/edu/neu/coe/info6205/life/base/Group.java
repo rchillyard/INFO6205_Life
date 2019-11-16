@@ -25,7 +25,17 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		public static Group create(long generation, Point point) {
 				final List<Point> points = new ArrayList<>();
 				points.add(point);
-				return new Group(generation, point, points);
+				return create(generation, points);
+		}
+
+		/**
+		 * Constructor for a Group with a particular origin and a list of Points.
+		 *
+		 * @param generation the generation of this Group.
+		 */
+		public static Group create(long generation, List<Point> points) {
+				if (points.isEmpty()) throw new LifeException("create: points must not be empty");
+				return new Group(generation, points.get(0), points);
 		}
 
 		/**
@@ -36,7 +46,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		 * @return a new Group.
 		 */
 		public static Group create(long generation, String string) {
-				Group result = new Group(0L);
+				Group result = new Group(generation);
 				if (string == null) throw new LifeException("create: was given null string");
 				final boolean ok = result.add(string);
 				assert ok : "create: problem adding: " + string;
@@ -57,7 +67,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		 * @throws IllegalArgumentException      if some property of this element
 		 *                                       prevents it from being added to this list
 		 */
-		boolean add(Point point) {
+		public boolean add(Point point) {
 				addPoint(point);
 				normalize();
 				return true;
@@ -537,6 +547,10 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		public Group generation(BiConsumer<Long, Void> monitor) {
 				monitor.accept(generation, null);
 				return newGeneration(generation + 1);
+		}
+
+		public boolean contains(Point point) {
+				return pointsAbsolute().contains(point);
 		}
 
 		/**

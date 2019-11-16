@@ -69,6 +69,11 @@ public class Grid implements Generational<Grid, Group>, Countable, Renderable {
 				return result;
 		}
 
+		public Group getGroup() {
+				if (groups.size() != 1) throw new LifeException("getGroup(): group must be unambiguous");
+				return groups.get(0);
+		}
+
 		/**
 		 * Test for equality, ignoring the generation.
 		 *

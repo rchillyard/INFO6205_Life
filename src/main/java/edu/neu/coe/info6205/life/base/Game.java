@@ -2,6 +2,7 @@ package edu.neu.coe.info6205.life.base;
 
 import edu.neu.coe.info6205.life.library.Library;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -56,9 +57,31 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				return new Game(generation + 1, grid.generation(this.monitor), this, this.monitor);
 		}
 
+		public Game(long generation, BiConsumer<Long, Group> monitor) {
+				this(generation, new Grid(generation), null, monitor);
+		}
+
+		public Game(long generation) {
+				this(generation, (l, g) -> {
+				});
+		}
+
+		public Game() {
+				this(0L);
+		}
+
 		@Override
 		public String render() {
 				return grid.render();
+		}
+
+		/**
+		 * Get the (unique) Group belonging to the grid.
+		 *
+		 * @return a Group.
+		 */
+		public Group getGroup() {
+				return grid.getGroup();
 		}
 
 		public static final int MaxGenerations = 1000;
@@ -67,26 +90,33 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				String patternName = args.length > 0 ? args[0] : "Blip";
 				System.out.println("Game of Life with starting pattern: " + patternName);
 				final String pattern = Library.get(patternName);
-				final long generations = run(pattern);
+				final long generations = run(0L, pattern);
 				System.out.println("Ending Game of Life after " + generations + " generations");
 		}
 
-		public static long run(String pattern) {
-				final long generation = 0L;
-				final Grid grid = new Grid(generation);
-				grid.add(Group.create(generation, pattern));
-				BiConsumer<Long, Grid> gridMonitor = (l, g) -> System.out.println("generation " + l + "; grid=" + g);
-				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ngroup=\n" + g.render());
-				Game game = new Game(generation, grid, null, groupMonitor);
-				while (!game.terminated()) {
-						System.out.println(game.render());
-						game = game.generation(gridMonitor);
-				}
-				return game.generation;
+		public static long run(long generation, String pattern) {
+				return run(generation, Point.points(pattern));
 		}
 
-		private Game(long generation, BiConsumer<Long, Group> monitor) {
-				this(generation, new Grid(generation), null, monitor);
+		public static long run(long generation, List<Point> points) {
+				return run(create(generation, points), (l, g) -> System.out.println("generation " + l + "; grid=" + g));
+		}
+
+		public static Game create(long generation, List<Point> points) {
+				final Grid grid = new Grid(generation);
+				grid.add(Group.create(generation, points));
+				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ngroup=\n" + g.render());
+				return new Game(generation, grid, null, groupMonitor);
+		}
+
+		public static long run(Game game, BiConsumer<Long, Grid> gridMonitor) {
+				if (game == null) throw new LifeException("run: game must not be null");
+				Game g = game;
+				while (!g.terminated()) {
+						System.out.println(g.render());
+						g = g.generation(gridMonitor);
+				}
+				return g.generation;
 		}
 
 		private Game(long generation, Grid grid, Game previous, BiConsumer<Long, Group> monitor) {
