@@ -105,7 +105,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		public static Game create(long generation, List<Point> points) {
 				final Grid grid = new Grid(generation);
 				grid.add(Group.create(generation, points));
-				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ngroup=\n" + g.render());
+				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ncount=" + g.getCount());
 				return new Game(generation, grid, null, groupMonitor);
 		}
 
@@ -113,7 +113,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				if (game == null) throw new LifeException("run: game must not be null");
 				Game g = game;
 				while (!g.terminated()) {
-						System.out.println(g.render());
+//						System.out.println(g.render());
 						g = g.generation(gridMonitor);
 				}
 				return g.generation;
