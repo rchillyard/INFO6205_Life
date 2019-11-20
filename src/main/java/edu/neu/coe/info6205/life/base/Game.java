@@ -159,20 +159,35 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		public static Behavior run(Game game, BiConsumer<Long, Grid> gridMonitor) {
 				if (game == null) throw new LifeException("run: game must not be null");
 				Game g = game;
-				while (!g.terminated()) {
-//						System.out.println(g.render());
-						g = g.generation(gridMonitor);
-				}
-				return new Behavior(g.generation, g.growthRate());
+				while (!g.terminated()) g = g.generation(gridMonitor);
+				int reason = g.generation >= MaxGenerations ? 2 : g.getCount() <= 1 ? 0 : 1;
+				return new Behavior(g.generation, g.growthRate(), reason);
 		}
 
+		/**
+		 * Class to model the behavior of a game of life.
+		 */
 		public static class Behavior {
+				/**
+				 * The generation at which the run stopped.
+				 */
 				public final long generation;
+				/**
+				 * The average rate of growth.
+				 */
 				public final double growth;
+				/**
+				 * The reason the run stopped:
+				 * 0: the cells went extinct
+				 * 1: a repeating sequence was noted;
+				 * 2: the maximum configured number of generations was reached.
+				 */
+				private final int reason;
 
-				public Behavior(long generation, double growth) {
+				public Behavior(long generation, double growth, int reason) {
 						this.generation = generation;
 						this.growth = growth;
+						this.reason = reason;
 				}
 
 				@Override
@@ -180,7 +195,23 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 						return "Behavior{" +
 										"generation=" + generation +
 										", growth=" + growth +
+										", reason=" + reason +
 										'}';
+				}
+
+				@Override
+				public boolean equals(Object o) {
+						if (this == o) return true;
+						if (!(o instanceof Behavior)) return false;
+						Behavior behavior = (Behavior) o;
+						return generation == behavior.generation &&
+										Double.compare(behavior.growth, growth) == 0 &&
+										reason == behavior.reason;
+				}
+
+				@Override
+				public int hashCode() {
+						return Objects.hash(generation, growth, reason);
 				}
 		}
 

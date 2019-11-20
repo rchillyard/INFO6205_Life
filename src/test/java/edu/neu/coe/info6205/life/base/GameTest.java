@@ -22,7 +22,7 @@ public class GameTest {
 				System.out.println("Game of Life with starting pattern: " + patternName);
 				final String pattern = Library.get(patternName);
 				final Game.Behavior generations = Game.run(0L, pattern);
-				assertEquals(4, generations);
+				assertEquals(new Game.Behavior(4, 0, 1), generations);
 		}
 
 		@Test
