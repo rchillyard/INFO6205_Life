@@ -84,24 +84,64 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				return grid.getGroup();
 		}
 
+		/**
+		 * Method to get a very crude measure of growth rate based on this Game and the very first Game in the series.
+		 *
+		 * @return a double which will be zero for expired Games and 1.0 for stable games.
+		 * Anything else suggests sustained growth.
+		 */
+		public double growthRate() {
+				Game game = this;
+				while (game.previous != null) {
+						game = game.previous;
+				}
+				long growth = (long) getCount() - game.getCount();
+				long generations = generation - game.generation;
+				return generations > 0 ? growth * 1.0 / generations : -0.1;
+		}
+
 		public static final int MaxGenerations = 1000;
 
+		/**
+		 * Main program for Game of Life.
+		 * @param args the name of the starting pattern (defaults to "Blip")
+		 */
 		public static void main(String[] args) {
 				String patternName = args.length > 0 ? args[0] : "Blip";
 				System.out.println("Game of Life with starting pattern: " + patternName);
 				final String pattern = Library.get(patternName);
-				final long generations = run(0L, pattern);
+				final Behavior generations = run(0L, pattern);
 				System.out.println("Ending Game of Life after " + generations + " generations");
 		}
 
-		public static long run(long generation, String pattern) {
+		/**
+		 * Run the game starting with pattern.
+		 *
+		 * @param generation the starting generation.
+		 * @param pattern    the pattern name.
+		 * @return the generation at which the game expired.
+		 */
+		public static Behavior run(long generation, String pattern) {
 				return run(generation, Point.points(pattern));
 		}
 
-		public static long run(long generation, List<Point> points) {
+		/**
+		 * Run the game starting with a list of points.
+		 *
+		 * @param generation the starting generation.
+		 * @param points     a list of points in Grid coordinates.
+		 * @return the generation at which the game expired.
+		 */
+		public static Behavior run(long generation, List<Point> points) {
 				return run(create(generation, points), (l, g) -> System.out.println("generation " + l + "; grid=" + g));
 		}
 
+		/**
+		 * Factory method to create a new Game starting at the given generation and with the given points.
+		 * @param generation the starting generation.
+		 * @param points a list of points in Grid coordinates.
+		 * @return a Game.
+		 */
 		public static Game create(long generation, List<Point> points) {
 				final Grid grid = new Grid(generation);
 				grid.add(Group.create(generation, points));
@@ -109,14 +149,39 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				return new Game(generation, grid, null, groupMonitor);
 		}
 
-		public static long run(Game game, BiConsumer<Long, Grid> gridMonitor) {
+		/**
+		 * Method to run a Game given a monitor method for Grids.
+		 *
+		 * @param game        the game to run.
+		 * @param gridMonitor the monitor
+		 * @return the generation when expired.
+		 */
+		public static Behavior run(Game game, BiConsumer<Long, Grid> gridMonitor) {
 				if (game == null) throw new LifeException("run: game must not be null");
 				Game g = game;
 				while (!g.terminated()) {
 //						System.out.println(g.render());
 						g = g.generation(gridMonitor);
 				}
-				return g.generation;
+				return new Behavior(g.generation, g.growthRate());
+		}
+
+		public static class Behavior {
+				public final long generation;
+				public final double growth;
+
+				public Behavior(long generation, double growth) {
+						this.generation = generation;
+						this.growth = growth;
+				}
+
+				@Override
+				public String toString() {
+						return "Behavior{" +
+										"generation=" + generation +
+										", growth=" + growth +
+										'}';
+				}
 		}
 
 		private Game(long generation, Grid grid, Game previous, BiConsumer<Long, Group> monitor) {

@@ -12,8 +12,8 @@ public class GameTest {
 				String patternName = "Blip";
 				System.out.println("Game of Life with starting pattern: " + patternName);
 				final String pattern = Library.get(patternName);
-				final long generations = Game.run(0L, pattern);
-				assertEquals(0, generations);
+				final Game.Behavior generations = Game.run(0L, pattern);
+				assertEquals(0, generations.generation);
 		}
 
 		@Test
@@ -21,7 +21,7 @@ public class GameTest {
 				String patternName = "Blinker";
 				System.out.println("Game of Life with starting pattern: " + patternName);
 				final String pattern = Library.get(patternName);
-				final long generations = Game.run(0L, pattern);
+				final Game.Behavior generations = Game.run(0L, pattern);
 				assertEquals(4, generations);
 		}
 
