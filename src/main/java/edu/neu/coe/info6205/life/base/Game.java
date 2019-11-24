@@ -190,6 +190,15 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 						this.reason = reason;
 				}
 
+				public double evaluate() {
+						switch (reason) {
+								case 0: return -1;
+								case 1: return 0;
+								case 2: return growth;
+								default: return -1;
+						}
+				}
+
 				@Override
 				public String toString() {
 						return "Behavior{" +

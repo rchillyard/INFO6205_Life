@@ -26,3 +26,4 @@ hs_err_pid*
 target
 src/test/java/edu/neu/coe/info6205/life/ga/
 
+/src/main/java/edu/neu/coe/info6205/satish/
