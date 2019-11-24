@@ -122,7 +122,19 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		 * @return the generation at which the game expired.
 		 */
 		public static Behavior run(long generation, String pattern) {
-				return run(generation, Point.points(pattern));
+				return run(generation, Point.points(pattern), MaxGenerations);
+		}
+
+		/**
+		 * Run the game starting with pattern.
+		 *
+		 * @param generation     the starting generation.
+		 * @param pattern        the pattern name.
+		 * @param maxGenerations the maximum number of generations for this run.
+		 * @return the generation at which the game expired.
+		 */
+		public static Behavior run(long generation, String pattern, int maxGenerations) {
+				return run(generation, Point.points(pattern), maxGenerations);
 		}
 
 		/**
@@ -130,10 +142,11 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		 *
 		 * @param generation the starting generation.
 		 * @param points     a list of points in Grid coordinates.
+		 * @param maxGenerations the maximum number of generations for this run.
 		 * @return the generation at which the game expired.
 		 */
-		public static Behavior run(long generation, List<Point> points) {
-				return run(create(generation, points), (l, g) -> System.out.println("generation " + l + "; grid=" + g));
+		public static Behavior run(long generation, List<Point> points, int maxGenerations) {
+				return run(create(generation, points), (l, g) -> System.out.println("generation " + l + "; grid=" + g), maxGenerations);
 		}
 
 		/**
@@ -154,13 +167,14 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		 *
 		 * @param game        the game to run.
 		 * @param gridMonitor the monitor
+		 * @param maxGenerations the maximum number of generations for this run.
 		 * @return the generation when expired.
 		 */
-		public static Behavior run(Game game, BiConsumer<Long, Grid> gridMonitor) {
+		public static Behavior run(Game game, BiConsumer<Long, Grid> gridMonitor, int maxGenerations) {
 				if (game == null) throw new LifeException("run: game must not be null");
 				Game g = game;
 				while (!g.terminated()) g = g.generation(gridMonitor);
-				int reason = g.generation >= MaxGenerations ? 2 : g.getCount() <= 1 ? 0 : 1;
+				int reason = g.generation >= maxGenerations ? 2 : g.getCount() <= 1 ? 0 : 1;
 				return new Behavior(g.generation, g.growthRate(), reason);
 		}
 
