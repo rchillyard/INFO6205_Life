@@ -122,7 +122,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		 * @return the generation at which the game expired.
 		 */
 		public static Behavior run(long generation, String pattern) {
-				return run(generation, Point.points(pattern), MaxGenerations);
+				return run(generation, pattern, MaxGenerations);
 		}
 
 		/**
@@ -206,7 +206,6 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 
 				public double evaluate() {
 						switch (reason) {
-								case 0: return -1;
 								case 1: return 0;
 								case 2: return growth;
 								default: return -1;
