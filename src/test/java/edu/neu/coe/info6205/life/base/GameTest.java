@@ -3,6 +3,8 @@ package edu.neu.coe.info6205.life.base;
 import edu.neu.coe.info6205.life.library.Library;
 import org.junit.Test;
 
+import java.util.function.BiConsumer;
+
 import static org.junit.Assert.assertEquals;
 
 public class GameTest {
@@ -27,6 +29,25 @@ public class GameTest {
 
 		@Test
 		public void generation() {
-				// TODO implement test
+				String patternName = "Blinker";
+				final String pattern = Library.get(patternName);
+				final Game game = Game.create(0L, Point.points(pattern));
+				Result result = new Result();
+				BiConsumer<Long,Grid> monitor = (aLong, grid) -> {
+						result.gen = aLong;
+						result.grid = grid;
+				};
+				final Game nextGeneration = game.generation(monitor);
+				assertEquals(3, nextGeneration.getCount());
+				assertEquals(0, result.gen);
+				assertEquals("O\n" +
+								"*\n" +
+								"*\n" +
+								"Origin: {0, 0}\n", result.grid.render());
+		}
+
+		class Result {
+				long gen;
+				Grid grid;
 		}
 }

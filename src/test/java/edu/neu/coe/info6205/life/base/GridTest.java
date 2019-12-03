@@ -1,9 +1,13 @@
 package edu.neu.coe.info6205.life.base;
 
+import edu.neu.coe.info6205.life.library.Library;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static edu.neu.coe.info6205.life.library.Library.Glider1;
 import static edu.neu.coe.info6205.life.library.Library.Glider2;
@@ -12,28 +16,54 @@ import static org.junit.Assert.assertEquals;
 public class GridTest {
 
 		@Test
-		public void add() {
-				// TODO implement test
+		public void testAdd() throws NoSuchFieldException, IllegalAccessException {
+				final Grid target = new Grid(0L);
+				final Group glider1 = Group.create(0L, Glider1);
+				target.add(glider1);
+				final Field groups = target.getClass().getDeclaredField("groups");
+				groups.setAccessible(true);
+				final List<Group> x = (List<Group>) groups.get(target);
+				assertEquals(1, x.size());
+				assertEquals(glider1, x.get(0));
 		}
 
 		@Test
-		public void getCount() {
-				// TODO implement test
+		public void testGetCount() {
+				final Group glider1 = Group.create(0L, Glider1);
+				int count = glider1.getCount();
+				final Grid target = new Grid(0L);
+				target.add(glider1);
+				assertEquals(count, target.getCount());
+		}
+
+		@Test(expected = UnsupportedOperationException.class)
+		public void testRemove() throws NoSuchFieldException, IllegalAccessException {
+				final Grid target = new Grid(0L);
+				final Group glider1 = Group.create(0L, Glider1);
+				target.add(glider1);
+				target.remove(glider1);
 		}
 
 		@Test
-		public void remove() {
-				// TODO implement test
+		public void testForEach() {
+				final Grid target = new Grid(0L);
+				final Group glider1 = Group.create(0L, Glider1);
+				target.add(glider1);
+
+				Consumer<? super Group> action = (Consumer<Group>) group -> assertEquals(glider1, group);
+				target.forEach(action);
 		}
 
 		@Test
-		public void forEach() {
-				// TODO implement test
-		}
-
-		@Test
-		public void generation() {
-				// TODO implement test
+		public void testGeneration() {
+				final Grid target = new Grid(0L);
+				final Group glider1 = Group.create(0L, Glider1);
+				target.add(glider1);
+				BiConsumer<Long,Void> monitor = (aLong, x) -> {
+						assertEquals(0L, aLong.longValue());
+				};
+				final Group nextGeneration = glider1.generation(monitor);
+				assertEquals(5, nextGeneration.getCount());
 		}
 
 		@Test
