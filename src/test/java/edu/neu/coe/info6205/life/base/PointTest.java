@@ -3,8 +3,7 @@ package edu.neu.coe.info6205.life.base;
 import edu.neu.coe.info6205.util.PrivateMethodTester;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class PointTest {
 
@@ -12,17 +11,12 @@ public class PointTest {
 
 		@Test
 		public void getXTest() {
-				// TODO implement test
+				assertEquals(0, Origin.getX());
 		}
 
 		@Test
 		public void getYTest() {
-				// TODO implement test
-		}
-
-		@Test
-		public void moveTest() {
-				// TODO implement test
+				assertEquals(0, Origin.getY());
 		}
 
 		@Test
@@ -39,7 +33,7 @@ public class PointTest {
 
 		@Test
 		public void validTest() {
-				// TODO implement test
+				assertTrue(Origin.valid());
 		}
 
 		@Test
@@ -74,16 +68,6 @@ public class PointTest {
 				assertEquals(p01, p01);
 				assertNotEquals(p00, p01);
 				assertNotEquals(p01, p00);
-		}
-
-		@Test
-		public void testHashCode() {
-				// TODO implement test
-		}
-
-		@Test
-		public void testToString() {
-				// TODO implement test
 		}
 
 		@Test

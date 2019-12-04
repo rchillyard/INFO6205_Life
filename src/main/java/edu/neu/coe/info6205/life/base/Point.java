@@ -58,7 +58,7 @@ public class Point implements Comparable<Point> {
 		}
 
 		public boolean valid() {
-				return x > 0 && y > 0;
+				return x >= 0 && y >= 0;
 		}
 
 		/**
@@ -134,6 +134,8 @@ public class Point implements Comparable<Point> {
 		 * @return a point vector in the given direction with the given length.
 		 */
 		public static Point createVector(int direction, int length) {
+//				System.out.println("createVector: "+direction+", "+length);
+				if (direction < 0 || direction > 7) throw new LifeException("createVector: invalid direction: " + direction);
 				final int n = direction - 3;
 				if (n > 0) {
 						int y = n > 1 ? 1 : 0;

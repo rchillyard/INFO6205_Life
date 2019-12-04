@@ -84,39 +84,157 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				return grid.getGroup();
 		}
 
+		/**
+		 * Method to get a very crude measure of growth rate based on this Game and the very first Game in the series.
+		 *
+		 * @return a double which will be zero for expired Games and 1.0 for stable games.
+		 * Anything else suggests sustained growth.
+		 */
+		public double growthRate() {
+				Game game = this;
+				while (game.previous != null) {
+						game = game.previous;
+				}
+				long growth = (long) getCount() - game.getCount();
+				long generations = generation - game.generation;
+				return generations > 0 ? growth * 1.0 / generations : -0.1;
+		}
+
 		public static final int MaxGenerations = 1000;
 
+		/**
+		 * Main program for Game of Life.
+		 * @param args the name of the starting pattern (defaults to "Blip")
+		 */
 		public static void main(String[] args) {
 				String patternName = args.length > 0 ? args[0] : "Blip";
 				System.out.println("Game of Life with starting pattern: " + patternName);
 				final String pattern = Library.get(patternName);
-				final long generations = run(0L, pattern);
+				final Behavior generations = run(0L, pattern);
 				System.out.println("Ending Game of Life after " + generations + " generations");
 		}
 
-		public static long run(long generation, String pattern) {
-				return run(generation, Point.points(pattern));
+		/**
+		 * Run the game starting with pattern.
+		 *
+		 * @param generation the starting generation.
+		 * @param pattern    the pattern name.
+		 * @return the generation at which the game expired.
+		 */
+		public static Behavior run(long generation, String pattern) {
+				return run(generation, pattern, MaxGenerations);
 		}
 
-		public static long run(long generation, List<Point> points) {
-				return run(create(generation, points), (l, g) -> System.out.println("generation " + l + "; grid=" + g));
+		/**
+		 * Run the game starting with pattern.
+		 *
+		 * @param generation     the starting generation.
+		 * @param pattern        the pattern name.
+		 * @param maxGenerations the maximum number of generations for this run.
+		 * @return the generation at which the game expired.
+		 */
+		public static Behavior run(long generation, String pattern, int maxGenerations) {
+				return run(generation, Point.points(pattern), maxGenerations);
 		}
 
+		/**
+		 * Run the game starting with a list of points.
+		 *
+		 * @param generation the starting generation.
+		 * @param points     a list of points in Grid coordinates.
+		 * @param maxGenerations the maximum number of generations for this run.
+		 * @return the generation at which the game expired.
+		 */
+		public static Behavior run(long generation, List<Point> points, int maxGenerations) {
+				return run(create(generation, points), (l, g) -> System.out.println("generation " + l + "; grid=" + g), maxGenerations);
+		}
+
+		/**
+		 * Factory method to create a new Game starting at the given generation and with the given points.
+		 * @param generation the starting generation.
+		 * @param points a list of points in Grid coordinates.
+		 * @return a Game.
+		 */
 		public static Game create(long generation, List<Point> points) {
 				final Grid grid = new Grid(generation);
 				grid.add(Group.create(generation, points));
-				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ngroup=\n" + g.render());
+				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ncount=" + g.getCount());
 				return new Game(generation, grid, null, groupMonitor);
 		}
 
-		public static long run(Game game, BiConsumer<Long, Grid> gridMonitor) {
+		/**
+		 * Method to run a Game given a monitor method for Grids.
+		 *
+		 * @param game        the game to run.
+		 * @param gridMonitor the monitor
+		 * @param maxGenerations the maximum number of generations for this run.
+		 * @return the generation when expired.
+		 */
+		public static Behavior run(Game game, BiConsumer<Long, Grid> gridMonitor, int maxGenerations) {
 				if (game == null) throw new LifeException("run: game must not be null");
 				Game g = game;
-				while (!g.terminated()) {
-						System.out.println(g.render());
-						g = g.generation(gridMonitor);
+				while (!g.terminated()) g = g.generation(gridMonitor);
+				int reason = g.generation >= maxGenerations ? 2 : g.getCount() <= 1 ? 0 : 1;
+				return new Behavior(g.generation, g.growthRate(), reason);
+		}
+
+		/**
+		 * Class to model the behavior of a game of life.
+		 */
+		public static class Behavior {
+				/**
+				 * The generation at which the run stopped.
+				 */
+				public final long generation;
+				/**
+				 * The average rate of growth.
+				 */
+				public final double growth;
+				/**
+				 * The reason the run stopped:
+				 * 0: the cells went extinct
+				 * 1: a repeating sequence was noted;
+				 * 2: the maximum configured number of generations was reached.
+				 */
+				private final int reason;
+
+				public Behavior(long generation, double growth, int reason) {
+						this.generation = generation;
+						this.growth = growth;
+						this.reason = reason;
 				}
-				return g.generation;
+
+				public double evaluate() {
+						switch (reason) {
+								case 1: return 0;
+								case 2: return growth;
+								default: return -1;
+						}
+				}
+
+				@Override
+				public String toString() {
+						return "Behavior{" +
+										"generation=" + generation +
+										", growth=" + growth +
+										", reason=" + reason +
+										'}';
+				}
+
+				@Override
+				public boolean equals(Object o) {
+						if (this == o) return true;
+						if (!(o instanceof Behavior)) return false;
+						Behavior behavior = (Behavior) o;
+						return generation == behavior.generation &&
+										Double.compare(behavior.growth, growth) == 0 &&
+										reason == behavior.reason;
+				}
+
+				@Override
+				public int hashCode() {
+						return Objects.hash(generation, growth, reason);
+				}
 		}
 
 		private Game(long generation, Grid grid, Game previous, BiConsumer<Long, Group> monitor) {

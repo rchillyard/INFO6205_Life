@@ -3,9 +3,7 @@ package edu.neu.coe.info6205.life.base;
 import com.google.common.collect.HashMultiset;
 import edu.neu.coe.info6205.util.Range;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
@@ -18,24 +16,35 @@ import static edu.neu.coe.info6205.life.base.Grid.Origin;
 public class Group implements Generational<Group, Void>, Renderable, Countable {
 
 		/**
-		 * Constructor for a Group with a particular origin and a list of Points.
+		 * Constructor for a Group with a single point.
 		 *
 		 * @param generation the generation of this Group.
 		 */
 		public static Group create(long generation, Point point) {
 				final List<Point> points = new ArrayList<>();
 				points.add(point);
-				return create(generation, points);
+				return create(generation, new HashSet<>(points));
+		}
+
+		/**
+		 * Constructor for a Group with a particular origin and a set of Points.
+		 *
+		 * @param generation the generation of this Group.
+		 * @param points a set of points.
+		 */
+		public static Group create(long generation, Set<Point> points) {
+				if (points.isEmpty()) throw new LifeException("create: points must not be empty");
+				return new Group(generation, points.iterator().next(), points);
 		}
 
 		/**
 		 * Constructor for a Group with a particular origin and a list of Points.
 		 *
 		 * @param generation the generation of this Group.
+		 * @param points     a list of points.
 		 */
 		public static Group create(long generation, List<Point> points) {
-				if (points.isEmpty()) throw new LifeException("create: points must not be empty");
-				return new Group(generation, points.get(0), points);
+				return create(generation, new HashSet<>(points));
 		}
 
 		/**
@@ -132,8 +141,9 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		Group merge(Group group) throws LifeException {
 				if (group == this) throw new LifeException("cannot merge with self");
 				Point newOrigin = origin.compareTo(group.origin) <= 0 ? origin : group.origin;
-				Group result = new Group(generation, newOrigin, extent1, extent2, moveCellsRelative(newOrigin));
-				group.forEach(p -> result.add(p.relative(newOrigin)));
+				Group result = new Group(generation, newOrigin, new HashSet<>());
+				result.add(pointsAbsolute());
+				result.add(group.pointsAbsolute());
 				return result;
 		}
 
@@ -282,8 +292,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 				if (points.size() != group.points.size()) return false;
 				final List<Point> elements1 = pointsAbsolute();
 				final List<Point> elements2 = group.pointsAbsolute();
-				final boolean same = HashMultiset.create(elements1).equals(HashMultiset.create(elements2));
-				return same;
+				return HashMultiset.create(elements1).equals(HashMultiset.create(elements2));
 		}
 
 		@Override
@@ -330,8 +339,8 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 				return new Group(generation, origin, mapPoints(f));
 		}
 
-		private List<Point> mapPoints(UnaryOperator<Point> f) {
-				final List<Point> mapped = new ArrayList<>();
+		private Set<Point> mapPoints(UnaryOperator<Point> f) {
+				final Set<Point> mapped = new HashSet<>();
 				points.forEach(p -> mapped.add(p.map(f)));
 				return mapped;
 		}
@@ -340,7 +349,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 				if (points.size() == 0) return;
 				forEach(this::updateExtents);
 				if (origin != null && points.contains(Origin)) return;  // CONSIDER null check of origin may not be necessary
-				updateOrigin(points.get(0));
+				updateOrigin(points.iterator().next());
 		}
 
 		private void updateOrigin(Point point) {
@@ -379,8 +388,8 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		 * @param point the point, relative to which, the Points should move.
 		 * @return a list of Points based on the new coordinates.
 		 */
-		private List<Point> moveCellsRelative(Point point) {
-				List<Point> result = new ArrayList<>();
+		private Set<Point> moveCellsRelative(Point point) {
+				Set<Point> result = new HashSet<>();
 				forEach(p -> result.add(p.relative(point)));
 				return result;
 		}
@@ -463,10 +472,10 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		 * <p>
 		 * NOTE Do not eliminate this method.
 		 *
-		 * @return the points in this Group.
+		 * @return the points in this Group, sorted.
 		 */
 		private List<Point> getPoints() {
-				return points;
+				return new ArrayList<>(this.points);
 		}
 		// which is furthest from the origin of the coordinate system.
 		// All cells have negative coordinates compared to extent2.
@@ -491,7 +500,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		private static final int OvercrowdingNeighborThreshold = 3;
 		private static final Range DeathRange = Range.valueOf(LonelinessNeighborThreshold, OvercrowdingNeighborThreshold);
 		private final long generation; // the current generation of this Group.
-		private List<Point> points; // the list of non-empty cells within this group (must include one point at the origin).
+		private Set<Point> points; // the set of non-empty cells within this group (must include one point at the origin).
 		private Point origin; // the position of the origin relative to the grid.
 		// All cells have coordinates which are relative to the origin.
 		private transient Point extent1; // the position of the corner of the enclosing rectangle of this Group,
@@ -510,7 +519,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		 * @param extent2    the extent2 of this Group (i.e. the NE corner of the boundary).
 		 * @param points     a list of points, which are in the coordinate system of this Group.
 		 */
-		Group(long generation, Point origin, Point extent1, Point extent2, List<Point> points) {
+		Group(long generation, Point origin, Point extent1, Point extent2, Set<Point> points) {
 				this.generation = generation;
 				this.origin = origin;
 				this.extent1 = extent1;
@@ -526,7 +535,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		 * @param generation the generation of this Group.
 		 */
 		Group(long generation) {
-				this(generation, Origin, new ArrayList<>());
+				this(generation, Origin, new HashSet<>());
 		}
 
 		/**
@@ -538,7 +547,7 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 		 * @param origin     the origin of this Group relative to the Grid (it is required that the origin is one of the points).
 		 * @param points     the points in this Group, with coordinates relative to the origin (points MUST include 0,0).
 		 */
-		Group(long generation, Point origin, List<Point> points) {
+		Group(long generation, Point origin, Set<Point> points) {
 				this(generation, origin, null, null, points);
 				forEach(this::updateExtents);
 		}
@@ -553,6 +562,9 @@ public class Group implements Generational<Group, Void>, Renderable, Countable {
 				return pointsAbsolute().contains(point);
 		}
 
+		public static Group create(long generation, Point origin, List<Point> points) {
+				return new Group(generation, origin, new HashSet<>(points));
+		}
 		/**
 		 * CONSIDER making it a non-static inner class of Group.
 		 */
