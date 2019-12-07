@@ -2,18 +2,22 @@ package edu.neu.coe.info6205.life.base;
 
 import GApro.GenoType;
 import edu.neu.coe.info6205.life.library.Library;
+import java.util.HashMap;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public class Game implements Generational<Game, Grid>, Countable, Renderable {
-
+                
 		/**
 		 * Method to get the cell count.
 		 *
 		 * @return the number of live cells.
+                 * 
+                 * 
 		 */
 		@Override
 		public int getCount() {
@@ -112,8 +116,10 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				String patternName = args.length > 0 ? args[0] : "ourPattern";
 				System.out.println("Game of Life with starting pattern: " + patternName);
 				//final String pattern = Library.get(patternName);
+                                System.out.println("my pattern: "+genoType.getPetternStr());
                                 final String pattern = genoType.getPetternStr();
-				final Behavior generations = run(0L, pattern);
+				//final Behavior generations = run(0L, pattern);
+                                Long generations = myRun(pattern);
 				System.out.println("Ending Game of Life after " + generations + " generations");
 		}
 
@@ -124,6 +130,25 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		 * @param pattern    the pattern name.
 		 * @return the generation at which the game expired.
 		 */
+                
+
+                public static final Map<Game, Long> generations = new HashMap<>();
+                public static Long myRun(String pattern) {
+				final long generation = 0L;
+				final Grid grid = new Grid(generation);
+				grid.add(Group.create(generation, pattern));
+				BiConsumer<Long, Grid> gridMonitor = (l, g) -> System.out.println("generation " + l + "; grid=" + g);
+                                //print plot and count
+				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ngroup=\n" + g.render()+ "\ncount=" + g.getCount());
+				Game game = new Game(generation, grid, null, groupMonitor);
+				while (!game.terminated()) {
+						generations.put(game, game.generation);
+						game = game.generation(gridMonitor);
+				}
+				System.out.println("Ending Game of Life after " + game.generation + " generations and with " + game.getCount() + " cells");
+				return game.generation;
+		}
+                
 		public static Behavior run(long generation, String pattern) {
 				return run(generation, pattern, MaxGenerations);
 		}
@@ -249,9 +274,10 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 
 		private boolean terminated() {
 				return testTerminationPredicate(g -> g.generation >= MaxGenerations, "having exceeded " + MaxGenerations + " generations") ||
-								testTerminationPredicate(g -> g.getCount() <= 1, "extinction") ||
+                                       testTerminationPredicate(g -> g.getCount() <= 1, "extinction"); 
 								// TODO now we look for two consecutive equivalent games...
-								testTerminationPredicate(Game::previousMatchingCycle, "having matching previous games");
+                                                                ////don't end if match cycle    
+				       //testTerminationPredicate(Game::previousMatchingCycle, "having matching previous games");
 		}
 
 		/**
@@ -279,6 +305,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 						} else
 								return false;
 				}
+                                
 				return true;
 		}
 
@@ -316,9 +343,9 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				}
 				return false;
 		}
-
-		private final Grid grid;
+                private final Grid grid;
 		private final Game previous;
 		private final BiConsumer<Long, Group> monitor;
 		private final long generation;
+		
 }

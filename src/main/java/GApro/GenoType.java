@@ -12,6 +12,7 @@ import io.jenetics.Genotype;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.util.Factory;
+import java.util.List;
 import java.util.Random;
 
 public class GenoType{
@@ -52,6 +53,7 @@ public class GenoType{
         
         //generate pattern String
         String patternStr = "";
+        List<String> dup = new ArrayList<>();
         while(gtfStr.length()>0){
             //transform gtf to point
             String thisChromosome = gtfStr.substring(0,8);
@@ -79,14 +81,19 @@ public class GenoType{
             //position of this cell
             String thisCell =  "";
             thisCell=thisCell.concat(Integer.toString(x)).concat(" ").concat(Integer.toString(y));
-            patternStr=patternStr.concat(thisCell);
             gtfStr=gtfStr.substring(8);
-            
+            if(!dup.contains(thisCell)){
+                dup.add(thisCell);
+            }
+            else{
+                continue;
+            }
+            patternStr=patternStr.concat(thisCell);
+                      
             if(gtfStr.length()>0) patternStr=patternStr.concat(", ");
-            this.petternStr=patternStr;
-            //System.out.println(thisCell);
-     
+             
         }
+        this.petternStr=patternStr;  
         
         //System.out.println(patternStr);
     }
