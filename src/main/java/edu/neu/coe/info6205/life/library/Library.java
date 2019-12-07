@@ -22,6 +22,8 @@ public class Library {
 		final public static String Glider2 = "2 0, 1 0, 0 0, 0 -1, 1 -2";
 
 		final public static String Glider3 = "0 0, 1 0, 2 0, 2 1, 1 2";
+                
+                final public static String ourPattern ="-2 -2, 1 1, -3 0, -1 1, 0 -2, 0 -3, 0 4, 3 -3, 1 -1, 0 1";
 
 		final public static Map<String, String> map = new HashMap<>();
 
@@ -43,5 +45,6 @@ public class Library {
 				put("Glider1", Glider1);
 				put("Glider2", Glider2);
 				put("Glider3", Glider3);
+                                put("ourPattern", ourPattern);
 		}
 }

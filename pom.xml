@@ -33,4 +33,5 @@
             <version>5.0.1</version>
         </dependency>
     </dependencies>
+    <name>INFO6205_210</name>
 </project>

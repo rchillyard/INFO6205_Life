@@ -1,5 +1,6 @@
 package edu.neu.coe.info6205.life.base;
 
+import GApro.GenoType;
 import edu.neu.coe.info6205.life.library.Library;
 
 import java.util.List;
@@ -107,9 +108,11 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		 * @param args the name of the starting pattern (defaults to "Blip")
 		 */
 		public static void main(String[] args) {
-				String patternName = args.length > 0 ? args[0] : "Blip";
+                                GenoType genoType = new GenoType(20);                            
+				String patternName = args.length > 0 ? args[0] : "ourPattern";
 				System.out.println("Game of Life with starting pattern: " + patternName);
-				final String pattern = Library.get(patternName);
+				//final String pattern = Library.get(patternName);
+                                final String pattern = genoType.getPetternStr();
 				final Behavior generations = run(0L, pattern);
 				System.out.println("Ending Game of Life after " + generations + " generations");
 		}
