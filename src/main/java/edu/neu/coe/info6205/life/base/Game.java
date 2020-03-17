@@ -158,8 +158,12 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 		public static Game create(long generation, List<Point> points) {
 				final Grid grid = new Grid(generation);
 				grid.add(Group.create(generation, points));
-				BiConsumer<Long, Group> groupMonitor = (l, g) -> System.out.println("generation " + l + ";\ncount=" + g.getCount());
+				BiConsumer<Long, Group> groupMonitor = (l, g) -> monitorGroup(l, g);
 				return new Game(generation, grid, null, groupMonitor);
+		}
+
+		public static void monitorGroup(Long l, Group g) {
+//				System.out.println("generation " + l + ";\ncount=" + g.getCount());
 		}
 
 		/**
@@ -175,7 +179,16 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				Game g = game;
 				while (!g.terminated()) g = g.generation(gridMonitor);
 				int reason = g.generation >= maxGenerations ? 2 : g.getCount() <= 1 ? 0 : 1;
-				return new Behavior(g.generation, g.growthRate(), reason);
+				if (reason==2) {
+						final double growth = g.growthRate();
+//						System.out.println(g.render());
+						if (growth > 0 && maxGenerations < 20000)
+								return run(game, gridMonitor, maxGenerations * 2);
+						if (maxGenerations > 20000)
+						System.out.println("terminating because maxGenerations "+maxGenerations);
+						return new Behavior(g.generation, growth, reason);
+				}
+				else return new Behavior(g.generation, Double.NaN, reason);
 		}
 
 		/**
@@ -196,7 +209,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 				 * 1: a repeating sequence was noted;
 				 * 2: the maximum configured number of generations was reached.
 				 */
-				private final int reason;
+				public final int reason;
 
 				public Behavior(long generation, double growth, int reason) {
 						this.generation = generation;
@@ -308,7 +321,7 @@ public class Game implements Generational<Game, Grid>, Countable, Renderable {
 
 		private boolean testTerminationPredicate(Predicate<Game> predicate, String message) {
 				if (predicate.test(this)) {
-						System.out.println("Terminating due to: " + message);
+//						System.out.println("Terminating due to: " + message);
 						return true;
 				}
 				return false;
